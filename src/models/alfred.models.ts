@@ -14,6 +14,5 @@ export function isAlfredSnippet(arg: any): arg is AlfredSnippet {
   const hasUid = arg.uid !== undefined;
   const hasName = arg.name !== undefined;
   const HasKeyword = arg.keyword !== undefined;
-  console.log({ arg, hasSnippet, hasUid, hasName, HasKeyword });
   return hasSnippet && hasUid && hasName && HasKeyword;
 }
