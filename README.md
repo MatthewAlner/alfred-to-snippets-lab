@@ -6,7 +6,7 @@ How to use:
 
 - First you will need to locate your `Alfred.alfredpreferences`
 
-!("/assets/walkthrough/01 - locate your Alfred alfredpreferences.png" "locate your Alfred alfredpreferences")
+!(assets/walkthrough/01 - locate your Alfred alfredpreferences.png "locate your Alfred alfredpreferences")
 
 // TODO
 - Stop hard coding the Alfred path, have it so you can pass it in.
