@@ -4,7 +4,7 @@ The idea here is to create a script to converts `Alfred's` JSON snippet format i
 
 ## Warning / Disclaimer
 
-> I wrote this for myself quickly so I didn't have to copy-paste 100s of items, it's not battle tested there are probably end cases I missed. It worked well enough for me and then I stopped developing it. I'm sharing in the hope it will save others time. As with any random script on the Internet PLEASE READ THE CODE before you run it to make sure you are happy with what it's doing.
+> I wrote this for myself quickly so I didn't have to copy-paste 100s of items, it's not battle tested there are probably edge cases I missed. It worked well enough for me and then I stopped developing it. I'm sharing in the hope it will save others time. As with any random script on the Internet PLEASE READ THE CODE before you run it to make sure you are happy with what it's doing.
 
 ## How to use:
 
