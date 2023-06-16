@@ -1,24 +1,43 @@
 import { PathLike } from 'fs';
 import { readdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
 import { AlfredSnippetWrapper, isAlfredSnippet } from './models/alfred.models';
-import { ISnipLabSnippet, SnippetsLabCollection } from './models/snippets-lab.models';
+import { ISnipLabFolder, ISnipLabSnippet, SnippetsLabCollection } from './models/snippets-lab.models';
 
 class SnippetMigrator {
   private alfredSnippetsDirectory: PathLike = `/Users/matt/Downloads/snippets`;
-  private snippetsLabCollection: SnippetsLabCollection = { contents: { snippets: [] } };
+  private snippetsLabCollection: SnippetsLabCollection = { contents: { snippets: [], folders: [] } };
+  private folderMap: Map<string, ISnipLabFolder> = new Map();
 
   public async run() {
-    // get a list of all the folders
+    // Get a list of all the folders
     const folderNames = await this.listDirectories(this.alfredSnippetsDirectory);
-    // for each folder use the name as the folder and
+
+    // Using the folder names create an array of ISnipLabFolder entities
+    const folders: ISnipLabFolder[] = folderNames.map(folderName => ({ title: folderName, uuid: crypto.randomUUID() }));
+
+    // Build a map of folder names to ISnipLabFolder entities
+    const folderTuple: Array<[string, ISnipLabFolder]> = folders.map(folder => [folder.title, folder] as [string, ISnipLabFolder]);
+    this.folderMap = new Map<string, ISnipLabFolder>(folderTuple);
+
+    // Add the ISnipLabFolder[] to the snippetsLabCollection
+    this.snippetsLabCollection.contents.folders?.push(...folders);
+
+    // Loop over the folders and look for Alfred snippets to add
     for (let folderName of folderNames) {
       const currentFolderPath = path.join(this.alfredSnippetsDirectory.toString(), folderName);
       const fileList = await this.listFiles(currentFolderPath, [`json`]);
-      const snippet = await this.createSnippetLabSnippet(fileList, folderName);
+      const folder = this.folderMap.get(folderName);
 
-      if (snippet) {
-        this.snippetsLabCollection.contents.snippets?.push(snippet);
+      if (!folder?.title) {
+        return;
+      }
+
+      const snippets = await this.createSnippetLabSnippets(fileList, folder);
+
+      if (snippets) {
+        this.snippetsLabCollection.contents.snippets?.push(...snippets);
       }
     }
 
@@ -26,27 +45,43 @@ class SnippetMigrator {
     await this.writeJsonFile(outputPath, this.snippetsLabCollection, true);
   }
 
-  private async createSnippetLabSnippet(fileList: string[], folderName: string): Promise<ISnipLabSnippet | undefined> {
-    for (const file of fileList) {
-      const currentFilePath = path.join(this.alfredSnippetsDirectory.toString(), folderName, file);
-      const alfredSnippetWrapper = await this.readJsonFile<AlfredSnippetWrapper>(currentFilePath);
-      const alfredSnippet = alfredSnippetWrapper?.alfredsnippet;
+  private async createSnippetLabSnippets(fileList: string[], folder: ISnipLabFolder): Promise<ISnipLabSnippet[]> {
+    const snippets: ISnipLabSnippet[] = [];
 
-      if (isAlfredSnippet(alfredSnippet)) {
-        const { snippet, name, uid, keyword } = alfredSnippet;
-        return {
-          fragments: [
-            {
-              content: snippet,
-            },
-          ],
-          title: name,
-          folder: folderName,
-          uuid: uid,
-        };
-      } else {
-        console.error(`doesn't look like a AlfredSnippet ${alfredSnippetWrapper}`);
+    for (const fileName of fileList) {
+      const snippet = await this.createSnippetLabSnippet(fileName, folder);
+
+      if (snippet) {
+        snippets.push(snippet);
       }
+    }
+
+    return snippets;
+  }
+
+  private async createSnippetLabSnippet(fileName: string, folder: ISnipLabFolder): Promise<ISnipLabSnippet | undefined> {
+    if (!folder?.title) {
+      return;
+    }
+
+    const currentFilePath = path.join(this.alfredSnippetsDirectory.toString(), folder.title, fileName);
+    const alfredSnippetWrapper = await this.readJsonFile<AlfredSnippetWrapper>(currentFilePath);
+    const alfredSnippet = alfredSnippetWrapper?.alfredsnippet;
+
+    if (isAlfredSnippet(alfredSnippet)) {
+      const { snippet, name, uid, keyword } = alfredSnippet;
+      return {
+        fragments: [
+          {
+            content: snippet,
+          },
+        ],
+        title: name,
+        folder: folder.uuid,
+        uuid: uid,
+      };
+    } else {
+      console.error(`doesn't look like a AlfredSnippet ${alfredSnippetWrapper}`);
     }
   }
 
