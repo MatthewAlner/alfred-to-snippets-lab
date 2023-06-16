@@ -1,6 +1,6 @@
 # Alfred to SnippetsLab️
 
-The idea here is to create a script to convers `Alfred's` JSON snippet format into the compatible import format for `SnippetLab`
+The idea here is to create a script to converts `Alfred's` JSON snippet format into the [import format](https://www.renfei.org/snippets-lab/manual/mac/tips-and-tricks/json-import.html) for `SnippetLab`.
 
 ## Warning / Disclaimer
 
@@ -16,7 +16,7 @@ The idea here is to create a script to convers `Alfred's` JSON snippet format in
 
 ![locate your Alfred alfredpreferences](assets/walkthrough/02%20-%20make%20a%20copy.png)
 
-- Clone this repo and change the `alfredSnippetsDirectory` on line 9 to match the location that you put your copy of `snippets`
+- Clone this repo and change the `alfredSnippetsDirectory` on line 9 of `src/index.ts` to match the location that you put your copy of `snippets`
 
 - install the deps with `yarn` or `npm install` ect
 
